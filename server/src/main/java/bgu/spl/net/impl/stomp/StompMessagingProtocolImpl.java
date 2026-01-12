@@ -17,7 +17,11 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<String
     
     @Override
     public void process(String message){
+        String [] lines = message.split("\n");
+        String frame = lines[0];
         
+
+
     }
 	
 	@Override
