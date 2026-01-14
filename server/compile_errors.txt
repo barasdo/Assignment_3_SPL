@@ -1,0 +1,70 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------------< bgu.spl:server >---------------------------
+[INFO] Building server 1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ server ---
+[INFO] Deleting C:\Users\doron\OneDrive\∙σ∞τ∩ Σ≥ßσπΣ\Assignment 3 SPL\Assignment 3 SPL\server\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ server ---
+[INFO] skip non existing resourceDirectory C:\Users\doron\OneDrive\∙σ∞τ∩ Σ≥ßσπΣ\Assignment 3 SPL\Assignment 3 SPL\server\src\main\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ server ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 33 source files with javac [debug target 1.8] to target\classes
+[INFO] /C:/Users/doron/OneDrive/∙σ∞τ∩ Σ≥ßσπΣ/Assignment 3 SPL/Assignment 3 SPL/server/src/main/java/bgu/spl/net/impl/rci/RemoteCommandInvocationProtocol.java: Some input files use unchecked or unsafe operations.
+[INFO] /C:/Users/doron/OneDrive/∙σ∞τ∩ Σ≥ßσπΣ/Assignment 3 SPL/Assignment 3 SPL/server/src/main/java/bgu/spl/net/impl/rci/RemoteCommandInvocationProtocol.java: Recompile with -Xlint:unchecked for details.
+[INFO] -------------------------------------------------------------
+[WARNING] COMPILATION WARNING : 
+[INFO] -------------------------------------------------------------
+[WARNING] bootstrap class path not set in conjunction with -source 8
+[WARNING] source value 8 is obsolete and will be removed in a future release
+[WARNING] target value 8 is obsolete and will be removed in a future release
+[WARNING] To suppress warnings about obsolete options, use -Xlint:-options.
+[INFO] 4 warnings 
+[INFO] -------------------------------------------------------------
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /C:/Users/doron/OneDrive/∙σ∞τ∩ Σ≥ßσπΣ/Assignment 3 SPL/Assignment 3 SPL/server/src/main/java/bgu/spl/net/impl/stomp/StompServer.java:[17,28] method threadPerClient in interface bgu.spl.net.srv.Server<T> cannot be applied to given types;
+  required: int,java.util.function.Supplier<bgu.spl.net.api.MessagingProtocol<T>>,java.util.function.Supplier<bgu.spl.net.api.MessageEncoderDecoder<T>>
+  found:    int,()->new St[...]mpl(),()->new Me[...]mpl()
+  reason: cannot infer type-variable(s) T
+    (argument mismatch; bad return type in lambda expression
+      bgu.spl.net.impl.stomp.StompMessagingProtocolImpl cannot be converted to bgu.spl.net.api.MessagingProtocol<T>)
+[ERROR] /C:/Users/doron/OneDrive/∙σ∞τ∩ Σ≥ßσπΣ/Assignment 3 SPL/Assignment 3 SPL/server/src/main/java/bgu/spl/net/impl/stomp/StompServer.java:[23,28] method reactor in interface bgu.spl.net.srv.Server<T> cannot be applied to given types;
+  required: int,int,java.util.function.Supplier<bgu.spl.net.api.MessagingProtocol<T>>,java.util.function.Supplier<bgu.spl.net.api.MessageEncoderDecoder<T>>
+  found:    int,int,()->new St[...]mpl(),()->new Me[...]mpl()
+  reason: cannot infer type-variable(s) T
+    (argument mismatch; bad return type in lambda expression
+      bgu.spl.net.impl.stomp.StompMessagingProtocolImpl cannot be converted to bgu.spl.net.api.MessagingProtocol<T>)
+[INFO] 2 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  3.666 s
+[INFO] Finished at: 2026-01-14T12:50:34+02:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.13.0:compile (default-compile) on project server: Compilation failure: Compilation failure: 
+[ERROR] /C:/Users/doron/OneDrive/∙σ∞τ∩ Σ≥ßσπΣ/Assignment 3 SPL/Assignment 3 SPL/server/src/main/java/bgu/spl/net/impl/stomp/StompServer.java:[17,28] method threadPerClient in interface bgu.spl.net.srv.Server<T> cannot be applied to given types;
+[ERROR]   required: int,java.util.function.Supplier<bgu.spl.net.api.MessagingProtocol<T>>,java.util.function.Supplier<bgu.spl.net.api.MessageEncoderDecoder<T>>
+[ERROR]   found:    int,()->new St[...]mpl(),()->new Me[...]mpl()
+[ERROR]   reason: cannot infer type-variable(s) T
+[ERROR]     (argument mismatch; bad return type in lambda expression
+[ERROR]       bgu.spl.net.impl.stomp.StompMessagingProtocolImpl cannot be converted to bgu.spl.net.api.MessagingProtocol<T>)
+[ERROR] /C:/Users/doron/OneDrive/∙σ∞τ∩ Σ≥ßσπΣ/Assignment 3 SPL/Assignment 3 SPL/server/src/main/java/bgu/spl/net/impl/stomp/StompServer.java:[23,28] method reactor in interface bgu.spl.net.srv.Server<T> cannot be applied to given types;
+[ERROR]   required: int,int,java.util.function.Supplier<bgu.spl.net.api.MessagingProtocol<T>>,java.util.function.Supplier<bgu.spl.net.api.MessageEncoderDecoder<T>>
+[ERROR]   found:    int,int,()->new St[...]mpl(),()->new Me[...]mpl()
+[ERROR]   reason: cannot infer type-variable(s) T
+[ERROR]     (argument mismatch; bad return type in lambda expression
+[ERROR]       bgu.spl.net.impl.stomp.StompMessagingProtocolImpl cannot be converted to bgu.spl.net.api.MessagingProtocol<T>)
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

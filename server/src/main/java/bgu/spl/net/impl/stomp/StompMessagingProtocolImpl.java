@@ -26,7 +26,7 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<String
     }
 
     @Override
-    public void process(String message) {
+    public String process(String message) {
         String[] lines = message.split("\n");
         String frame = lines[0];
         Map<String, String> headers = new HashMap<>();
@@ -53,31 +53,30 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<String
         switch (frame) {
 
             case ("CONNECT"):
-                handleConnect(headers);
+                handleConnect(headers, message);
                 break;
 
             case "SEND":
-                handleSend(headers, bodyToString);
+                handleSend(headers, bodyToString, message);
                 break;
 
             case "SUBSCRIBE":
-                handleSubscribe(headers);
+                handleSubscribe(headers, message);
                 break;
 
             case "UNSUBSCRIBE":
-                handleUnsubscribe(headers);
+                handleUnsubscribe(headers, message);
                 break;
 
             case "DISCONNECT":
-                handleDisconnect(headers);
+                handleDisconnect(headers, message);
                 break;
 
             default:
-                sendError("UnKown Command", "command doesnt exist", headers);
+                sendError("UnKnown Command", "command doesnt exist", headers, message);
         }
 
-    }
-
+        return null;
     }
 
     @Override
@@ -87,14 +86,14 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<String
 
     // handlers
 
-    private void handleConnect(Map<String, String> headers) {
+    private void handleConnect(Map<String, String> headers, String message) {
         String version = headers.get("accept-version");
         String host = headers.get("host");
         String login = headers.get("login");
         String passcode = headers.get("passcode");
 
         if (version == null || host == null || login == null || passcode == null) {
-            sendError("Malformed CONNECT frame", "Missing required headers", headers);
+            sendError("Malformed CONNECT frame", "Missing required headers", headers, message);
             return;
         }
 
@@ -118,25 +117,25 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<String
                 break;
 
             case WRONG_PASSWORD:
-                sendError("Wrong password", "The password you entered is incorrect", headers);
+                sendError("Wrong password", "The password you entered is incorrect", headers, message);
                 break;
 
             case ALREADY_LOGGED_IN:
-                sendError("User already logged in", "This user already has an active connection", headers);
+                sendError("User already logged in", "This user already has an active connection", headers, message);
                 break;
 
             case CLIENT_ALREADY_CONNECTED:
-                sendError("Client already connected", "This connection is already logged in", headers);
+                sendError("Client already connected", "This connection is already logged in", headers, message);
                 break;
         }
     }
 
-    private void handleSend(Map<String, String> headers, String body) {
+    private void handleSend(Map<String, String> headers, String body, String message) {
         if (!isLoggedIn) {
             sendError(
                     "Unauthorized",
                     "You must login before sending messages",
-                    headers);
+                    headers, message);
             return;
         }
         String destination = headers.get("destination");
@@ -145,7 +144,7 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<String
             sendError(
                     "Malformed SEND frame",
                     "Missing destination header",
-                    headers);
+                    headers, message);
             return;
         }
         SubscriptionManager manager = SubscriptionManager.getInstance();
@@ -153,7 +152,7 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<String
             sendError(
                     "Not subscribed",
                     "Client is not subscribed to destination",
-                    headers);
+                    headers, message);
             return;
         }
 
@@ -177,27 +176,27 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<String
 
     }
 
-    private void handleSubscribe(Map<String, String> headers) {
+    private void handleSubscribe(Map<String, String> headers, String message) {
 
         // Checks if the user is connected
         if (!isLoggedIn) {
             sendError(
                     "Unauthorized",
                     "You must login before subscribing",
-                    headers);
+                    headers, message);
             return;
         }
 
         String destination = headers.get("destination");
         String id = headers.get("id");
         if (destination == null || id == null) {
-            sendError("Malformed SUBSCRIBE frame", "Missing required headers", headers);
+            sendError("Malformed SUBSCRIBE frame", "Missing required headers", headers, message);
             return;
         }
         SubscriptionManager manager = SubscriptionManager.getInstance();
         boolean success = manager.subscribe(connectionId, destination, id);
         if (!success) {
-            sendError("Failed subscribe", "Duplicate subscription id", headers);
+            sendError("Failed subscribe", "Duplicate subscription id", headers, message);
             return;
         }
         if (headers.containsKey("receipt")) {
@@ -205,23 +204,23 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<String
         }
     }
 
-    private void handleUnsubscribe(Map<String, String> headers) {
+    private void handleUnsubscribe(Map<String, String> headers, String message) {
         if (!isLoggedIn) {
             sendError(
                     "Unauthorized",
                     "You must login before unsubscribing",
-                    headers);
+                    headers, message);
             return;
         }
         String id = headers.get("id");
         if (id == null) {
-            sendError("Malformed UNSUBSCRIBE frame", "Missing required headers", headers);
+            sendError("Malformed UNSUBSCRIBE frame", "Missing required headers", headers, message);
             return;
         }
         SubscriptionManager manager = SubscriptionManager.getInstance();
         String result = manager.unsubscribe(connectionId, id);
         if (!result.equals("OK")) {
-            sendError("Malformed UNSUBSCRIBE frame", "Subscription id does not exist", headers);
+            sendError("Malformed UNSUBSCRIBE frame", "Subscription id does not exist", headers, message);
             return;
         }
         if (headers.containsKey("receipt")) {
@@ -229,20 +228,21 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<String
         }
     }
 
-    private void handleDisconnect(Map<String, String> headers) {
+    private void handleDisconnect(Map<String, String> headers, String message) {
         if (!isLoggedIn) {
             sendError(
                     "Unauthorized",
                     "You must login before unsubscribing",
-                    headers);
+                    headers, message);
             return;
         }
         String receiptId = headers.get("receipt");
         if (receiptId == null) {
             sendError("Malformed DISCONNECT frame",
-                    "Missing required headers- you must add receipt id to disconnect", headers);
+                    "Missing required headers- you must add receipt id to disconnect", headers, message);
             return;
         }
+        sendReceipt(receiptId);
         SubscriptionManager manager = SubscriptionManager.getInstance();
         manager.removeAllSubscriptions(connectionId);
         Database.getInstance().logout(connectionId);
@@ -258,23 +258,46 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<String
         connections.send(connectionId, msg);
     }
 
-    private void sendError(String errorType, String msg, Map<String, String> headers) {
+    private void sendError(String errorType,
+            String detailedExplanation,
+            Map<String, String> headers,
+            String originalMessage) {
+
         StringBuilder sb = new StringBuilder();
 
         sb.append("ERROR\n");
 
         if (headers != null && headers.containsKey("receipt")) {
-            sb.append("receipt-id: ").append(headers.get("receipt")).append("\n");
+            sb.append("receipt-id:")
+                    .append(headers.get("receipt"))
+                    .append("\n");
         }
-        sb.append("message: ").append(errorType).append("\n\n");
 
-        if (msg != null && !msg.isEmpty()) {
-            sb.append(msg).append("\n");
+        sb.append("message:")
+                .append(errorType)
+                .append("\n\n");
+
+        sb.append("The message:\n");
+        sb.append("-----\n");
+
+        if (originalMessage != null && !originalMessage.isEmpty()) {
+
+            sb.append(originalMessage.replace("\u0000", ""))
+                    .append("\n");
         }
+
+        sb.append("-----\n");
+        sb.append(detailedExplanation)
+                .append("\n");
 
         sb.append("\u0000");
 
         connections.send(connectionId, sb.toString());
+
+        if (isLoggedIn) {
+            SubscriptionManager.getInstance().removeAllSubscriptions(connectionId);
+            Database.getInstance().logout(connectionId);
+        }
 
         shouldTerminate = true;
         connections.disconnect(connectionId);
