@@ -62,5 +62,12 @@
         "valarray": "cpp",
         "variant": "cpp"
     },
-    "makefile.makefilePath": "client/"
+    "makefile.makefilePath": "client/",
+    "github.copilot.enable": {
+        "*": false,
+        "plaintext": false,
+        "markdown": false
+    },
+    "C_Cpp.intelliSenseEngine": "default",
+    "C_Cpp.errorSquiggles": "enabled"
 }
