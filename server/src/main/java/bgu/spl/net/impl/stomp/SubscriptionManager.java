@@ -28,27 +28,24 @@ public class SubscriptionManager {
     private SubscriptionManager() {}
 
     public boolean subscribe(int connectionId, String topic, String subscriptionId) {
-        // handles the case that a client trying to subscribe different topics with same subID
+        
         ConcurrentHashMap<String, String> subsOfClient = clientSubscriptions.get(connectionId);
-        if (subsOfClient != null && subsOfClient.containsKey(subscriptionId)) {
-            return false;
-        }
-
-        //adding to client map
         if (subsOfClient == null){
             subsOfClient = new ConcurrentHashMap<>();
-            
-            ConcurrentHashMap <String,String> existing = clientSubscriptions.putIfAbsent(connectionId, subsOfClient);
-            //if someone already inserted that client
+            ConcurrentHashMap<String,String> existing = clientSubscriptions.putIfAbsent(connectionId, subsOfClient);
             if (existing != null){
                 subsOfClient = existing;
             }
         }
-        subsOfClient.put(subscriptionId, topic);
-
         
-
-        //adding to topic map
+        //trying adding to client map 
+        // if that subId already exist so the putIfAbsent will not return null
+        String previousValue = subsOfClient.putIfAbsent(subscriptionId, topic);
+        if (previousValue != null) {
+            // subscriptionId already exists
+            return false;
+        }
+        // adding to topic map
         ConcurrentHashMap<Integer, String> subsOfTopic = topicSubscribers.get(topic);
         if (subsOfTopic == null) {
             subsOfTopic = new ConcurrentHashMap<>();
