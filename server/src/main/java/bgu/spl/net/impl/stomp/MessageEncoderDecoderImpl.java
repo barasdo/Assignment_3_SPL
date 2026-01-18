@@ -16,7 +16,7 @@ public class MessageEncoderDecoderImpl implements MessageEncoderDecoder<String> 
 
     @Override
     public String decodeNextByte(byte nextByte) {
-        if (nextByte == '\u0000') {
+        if (nextByte == '\0') {
             byte[] resultBytes = new byte[bytes.size()];
             for (int i = 0; i < bytes.size(); i++) {
                 resultBytes[i] = bytes.get(i);
@@ -29,4 +29,4 @@ public class MessageEncoderDecoderImpl implements MessageEncoderDecoder<String> 
         bytes.add(nextByte);
         return null;
     }
-        }
+}

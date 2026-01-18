@@ -79,8 +79,6 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<String
 
     }
 
-
-
     @Override
     public boolean shouldTerminate() {
         return shouldTerminate;
@@ -100,9 +98,9 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<String
         }
 
         if (!version.equals("1.2")) {
-        sendError("Unsupported version", 
-                "Server supports STOMP version 1.2, but client requested: " + version, 
-                headers, message);
+            sendError("Unsupported version",
+                    "Server supports STOMP version 1.2, but client requested: " + version,
+                    headers, message);
             return;
         }
 
@@ -268,47 +266,41 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<String
     }
 
     private void sendError(String errorType,
-                       String detailedExplanation,
-                       Map<String, String> headers,
-                       String originalMessage) {
+            String detailedExplanation,
+            Map<String, String> headers,
+            String originalMessage) {
 
         StringBuilder sb = new StringBuilder();
 
-        
         sb.append("ERROR\n");
 
-        
         if (headers != null && headers.containsKey("receipt")) {
             sb.append("receipt-id:")
-            .append(headers.get("receipt"))
-            .append("\n");
+                    .append(headers.get("receipt"))
+                    .append("\n");
         }
 
-        
         sb.append("message:")
-        .append(errorType)
-        .append("\n\n");
+                .append(errorType)
+                .append("\n\n");
 
-        
         sb.append("The message:\n");
         sb.append("-----\n");
 
         if (originalMessage != null && !originalMessage.isEmpty()) {
-            
+
             sb.append(originalMessage.replace("\u0000", ""))
-            .append("\n");
+                    .append("\n");
         }
 
         sb.append("-----\n");
         sb.append(detailedExplanation)
-        .append("\n");
+                .append("\n");
 
-        
         sb.append("\u0000");
 
         connections.send(connectionId, sb.toString());
 
-        
         if (isLoggedIn) {
             SubscriptionManager.getInstance().removeAllSubscriptions(connectionId);
             Database.getInstance().logout(connectionId);

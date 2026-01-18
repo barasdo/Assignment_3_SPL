@@ -138,8 +138,14 @@ void StompProtocol::processKeyboardCommand(const std::string& line) {
         if (args.size() < 2) return;
         std::string file_path = args[1];
         
-        names_and_events nne = parseEventsFile(file_path);
-        
+        names_and_events nne;
+
+        try {
+        nne = parseEventsFile(file_path);
+        } catch (const std::exception& e) {
+        std::cout << "Error reading file: " << e.what() << std::endl;
+        return;
+        }
         // SORTING: Split -> Sort by Time -> Merge
         std::vector<Event> before_halftime;
         std::vector<Event> after_halftime;
@@ -151,7 +157,7 @@ void StompProtocol::processKeyboardCommand(const std::string& line) {
                      is_before = false;
                  }
             }
-            if (is_before) before_halftime.push_back(event);
+            if (is_before || event.get_time()<=3060) before_halftime.push_back(event);
             else after_halftime.push_back(event);
         }
         
@@ -227,7 +233,7 @@ void StompProtocol::processKeyboardCommand(const std::string& line) {
                      is_before = false;
                  }
             }
-            if (is_before) before_halftime.push_back(event);
+            if (is_before || event.get_time()<=3060) before_halftime.push_back(event);
             else after_halftime.push_back(event);
         }
         
@@ -241,6 +247,12 @@ void StompProtocol::processKeyboardCommand(const std::string& line) {
         events.insert(events.end(), before_halftime.begin(), before_halftime.end());
         events.insert(events.end(), after_halftime.begin(), after_halftime.end());
         
+        // DEBUG: Show sorted order
+        std::cout << "DEBUG: After sorting, events order:" << std::endl;
+        for (const auto& ev : events) {
+            std::cout << "  " << ev.get_time() << " - " << ev.get_name() << std::endl;
+        }
+        
         // Aggregate stats
         std::map<std::string, std::string> general_stats;
         std::map<std::string, std::string> team_a_stats;
@@ -253,53 +265,57 @@ void StompProtocol::processKeyboardCommand(const std::string& line) {
         }
 
         std::ofstream outfile(file_path);
-        if (outfile.is_open()) {
-             if (!events.empty()) {
-                  outfile << events[0].get_team_a_name() << " vs " << events[0].get_team_b_name() << "\n";
-                  outfile << "Game stats:\n";
-                  
-                  outfile << "General stats:\n";
-                  for (const auto& [key, val] : general_stats) {
-                      outfile << key << ": " << val << "\n";
-                  }
-                  
-                  outfile << events[0].get_team_a_name() << " stats:\n";
-                  for (const auto& [key, val] : team_a_stats) {
-                      outfile << key << ": " << val << "\n";
-                  }
+        if (!outfile.is_open()) {
+            std::cout << "Error: Cannot write to file: " << file_path << std::endl;
+            return;
+        }
+        
+        if (!events.empty()) {
+            outfile << events[0].get_team_a_name() << " vs " << events[0].get_team_b_name() << "\n";
+            outfile << "Game stats:\n";
+            
+            outfile << "General stats:\n";
+            for (const auto& [key, val] : general_stats) {
+                outfile << key << ": " << val << "\n";
+            }
+            
+            outfile << events[0].get_team_a_name() << " stats:\n";
+            for (const auto& [key, val] : team_a_stats) {
+                outfile << key << ": " << val << "\n";
+            }
 
-                  outfile << events[0].get_team_b_name() << " stats:\n";
-                  for (const auto& [key, val] : team_b_stats) {
-                      outfile << key << ": " << val << "\n";
-                  }
+            outfile << events[0].get_team_b_name() << " stats:\n";
+            for (const auto& [key, val] : team_b_stats) {
+                outfile << key << ": " << val << "\n";
+            }
 
-                  outfile << "Game event reports:\n";
-                  for (const auto& ev : events) {
-                      outfile << ev.get_time() << " - " << ev.get_name() << ":\n\n";
-                      outfile << ev.get_discription() << "\n\n\n";
-                  }
-             }
-             outfile.close();
-             std::cout << "Summary written to " << file_path << std::endl;
+            outfile << "Game event reports:\n";
+            for (const auto& ev : events) {
+                outfile << ev.get_time() << " - " << ev.get_name() << ":\n\n";
+                outfile << ev.get_discription() << "\n\n\n";
+            }
+        
+        outfile.close();
+        std::cout << "Summary written to " << file_path << std::endl;
         }
     }
 }
 
 bool StompProtocol::processServerFrame(const std::string& frame) {
-    std::stringstream ss(frame);
+    std::stringstream s(frame);
     std::string line;
     std::string command;
-    std::getline(ss, command); 
+    std::getline(s, command); 
 
     std::map<std::string, std::string> headers;
     std::string body;
     bool inBody = false;
 
-    while (std::getline(ss, line)) {
+    while (std::getline(s, line)) {
         if (line.empty()) {
             inBody = true;
             char c; 
-            while(ss.get(c)) body += c; 
+            while(s.get(c)) body += c; 
             break;
         }
         size_t colon = line.find(':');
@@ -357,6 +373,7 @@ bool StompProtocol::processServerFrame(const std::string& frame) {
         
         std::string game_name = event.get_team_a_name() + "_" + event.get_team_b_name();
         gameEvents[game_name][user].push_back(event);
+        std::cout << "DEBUG: Saved event for game: [" << game_name << "] user: [" << user << "]" << std::endl;
     }
     
     return true;

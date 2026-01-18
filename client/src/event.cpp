@@ -63,6 +63,66 @@ const std::string &Event::get_discription() const
 
 Event::Event(const std::string &frame_body) : team_a_name(""), team_b_name(""), name(""), time(0), game_updates(), team_a_updates(), team_b_updates(), description("")
 {
+    std::stringstream bodyStream(frame_body);
+    std::string line;
+    std::string current_section = "";
+    
+    while (std::getline(bodyStream, line)) {
+        // Skip empty lines
+        if (line.empty()) continue;
+        
+        // Check for main fields
+        if (line.find("team a: ") == 0) {
+            team_a_name = line.substr(8);
+        }
+        else if (line.find("team b: ") == 0) {
+            team_b_name = line.substr(8);
+        }
+        else if (line.find("event name: ") == 0) {
+            name = line.substr(12);
+        }
+        else if (line.find("time: ") == 0) {
+            time = std::stoi(line.substr(6));
+        }
+        // Check for section headers
+        else if (line == "general game updates:") {
+            current_section = "general";
+        }
+        else if (line == "team a updates:") {
+            current_section = "team_a";
+        }
+        else if (line == "team b updates:") {
+            current_section = "team_b";
+        }
+        else if (line == "description:") {
+            current_section = "description";
+            // Read the rest as description
+            std::string desc_line;
+            while (std::getline(bodyStream, desc_line)) {
+                if (!description.empty()) description += "\n";
+                description += desc_line;
+            }
+            break;
+        }
+        // Parse key:value pairs for updates
+        else if (!current_section.empty() && current_section != "description") {
+            size_t colon = line.find(':');
+            if (colon != std::string::npos) {
+                std::string key = line.substr(0, colon);
+                std::string value = line.substr(colon + 1);
+                
+                if (current_section == "general") {
+                    game_updates[key] = value;
+                }
+                else if (current_section == "team_a") {
+                    team_a_updates[key] = value;
+                }
+                else if (current_section == "team_b") {
+                    team_b_updates[key] = value;
+                }
+            }
+        }
+    }
 }
 
 names_and_events parseEventsFile(std::string json_path)
