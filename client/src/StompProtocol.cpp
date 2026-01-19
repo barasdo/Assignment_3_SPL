@@ -247,12 +247,6 @@ void StompProtocol::processKeyboardCommand(const std::string& line) {
         events.insert(events.end(), before_halftime.begin(), before_halftime.end());
         events.insert(events.end(), after_halftime.begin(), after_halftime.end());
         
-        // DEBUG: Show sorted order
-        std::cout << "DEBUG: After sorting, events order:" << std::endl;
-        for (const auto& ev : events) {
-            std::cout << "  " << ev.get_time() << " - " << ev.get_name() << std::endl;
-        }
-        
         // Aggregate stats
         std::map<std::string, std::string> general_stats;
         std::map<std::string, std::string> team_a_stats;
@@ -355,7 +349,7 @@ bool StompProtocol::processServerFrame(const std::string& frame) {
         Event event(body);
         std::string user = "";
         
-        // Correct Body Parsing (Kept as valid fix)
+        // Body Parsing 
         std::stringstream bss(body);
         std::string bline;
         while(std::getline(bss, bline)) {
@@ -373,7 +367,6 @@ bool StompProtocol::processServerFrame(const std::string& frame) {
         
         std::string game_name = event.get_team_a_name() + "_" + event.get_team_b_name();
         gameEvents[game_name][user].push_back(event);
-        std::cout << "DEBUG: Saved event for game: [" << game_name << "] user: [" << user << "]" << std::endl;
     }
     
     return true;
