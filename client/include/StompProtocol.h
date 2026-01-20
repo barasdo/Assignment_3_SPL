@@ -6,7 +6,7 @@
 #include <string>
 #include <event.h>
 
-// TODO: implement the STOMP protocol
+
 class StompProtocol
 {
 private:

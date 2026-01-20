@@ -175,12 +175,17 @@ public class StompMessagingProtocolImpl implements StompMessagingProtocol<String
                     "\u0000";
 
             connections.send(otherId, msg);
-
         }
+
+        // Track file upload in database
+        String filename = headers.get("filename");
+        if (filename != null && !filename.isEmpty()) {
+            Database.getInstance().trackFileUpload(username, filename, destination);
+        }
+
         if (headers.containsKey("receipt")) {
             sendReceipt(headers.get("receipt"));
         }
-
     }
 
     private void handleSubscribe(Map<String, String> headers, String message) {

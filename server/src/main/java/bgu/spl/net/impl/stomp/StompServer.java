@@ -1,11 +1,10 @@
 package bgu.spl.net.impl.stomp;
 
-import bgu.spl.net.impl.echo.LineMessageEncoderDecoder;
+import bgu.spl.net.impl.data.Database;
 import bgu.spl.net.srv.Server;
 
 public class StompServer {
     public static void main(String[] args) {
-        // TODO: implement this
         if (args.length != 2) {
             System.err.println("Usage: <port> <tpc|reactor>");
             return;
@@ -31,6 +30,12 @@ public class StompServer {
             System.err.println("Unknown server type");
             return;
         }
+
+        // Add shutdown hook to print database report when server stops
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("\n=== Generating Server Report ===");
+            Database.getInstance().printReport();
+        }));
 
         server.serve();
     }
